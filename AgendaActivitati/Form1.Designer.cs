@@ -311,21 +311,21 @@
             // salveazaToolStripMenuItem
             // 
             salveazaToolStripMenuItem.Name = "salveazaToolStripMenuItem";
-            salveazaToolStripMenuItem.Size = new Size(224, 26);
+            salveazaToolStripMenuItem.Size = new Size(186, 26);
             salveazaToolStripMenuItem.Text = "Salvare date";
             salveazaToolStripMenuItem.Click += salveazaToolStripMenuItem_Click;
             // 
             // incarcaToolStripMenuItem
             // 
             incarcaToolStripMenuItem.Name = "incarcaToolStripMenuItem";
-            incarcaToolStripMenuItem.Size = new Size(224, 26);
+            incarcaToolStripMenuItem.Size = new Size(186, 26);
             incarcaToolStripMenuItem.Text = "Incarcare date";
             incarcaToolStripMenuItem.Click += incarcaToolStripMenuItem_Click;
             // 
             // eToolStripMenuItem
             // 
             eToolStripMenuItem.Name = "eToolStripMenuItem";
-            eToolStripMenuItem.Size = new Size(224, 26);
+            eToolStripMenuItem.Size = new Size(186, 26);
             eToolStripMenuItem.Text = "Inchidere";
             eToolStripMenuItem.Click += eToolStripMenuItem_Click;
             // 

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Drawing.Printing;
 using System.Data.OleDb;
@@ -10,12 +10,23 @@ namespace AgendaActivitati
         private Agenda agenda = new Agenda();
         private string caleFisier = "agenda.xml";
         private List<(string ProjectName, int ActivityCount)> chartData;
+        
         public Form1()
         {
             InitializeComponent();
             InitializeDataGridViews();
             LoadAgendaFromFile();
             KeyPreview = true;
+
+            dgvActivitati.MouseDown += DgvActivitati_MouseDown;
+
+            dgvProiecte.AllowDrop = true;
+            dgvProiecte.DragEnter += DgvProiecte_DragEnter;
+            dgvProiecte.DragDrop += DgvProiecte_DragDrop;
+            dgvProiecte.DragOver += DgvProiecte_DragOver;
+
+            tabControl1.AllowDrop = true;
+            tabControl1.DragOver += TabControl1_DragOver;
         }
 
         private void InitializeDataGridViews()
@@ -361,6 +372,8 @@ namespace AgendaActivitati
             }
         }
 
+        // PRINT
+
         private void btnPrint_Click(object sender, EventArgs e)
         {
             PrintDocument printDoc = new PrintDocument();
@@ -429,6 +442,8 @@ namespace AgendaActivitati
             }
         }
 
+        // GRAFIC
+
         private void chartPanel_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -486,7 +501,7 @@ namespace AgendaActivitati
                 }
             }
 
-            // labels
+            // labels pentru "unitatile de masura" ale axelor
             using (Font axisFont = new Font("Arial", 12))
             {
                 g.DrawString("Proiecte", axisFont, Brushes.Black, chartWidth / 2, chartY + chartHeight + 40);
@@ -497,7 +512,7 @@ namespace AgendaActivitati
             }
         }
 
-        // metoda pentru afisarea statisticilor pentru domeniul selectat (folosita in dvgDomenii_SelectionChanged)
+        // metoda pentru afisarea statisticilor la selectarea unui domeniu (folosita in dvgDomenii_SelectionChanged)
         private void UpdateChartData()
         {
             chartData = new List<(string, int)>();
@@ -509,15 +524,123 @@ namespace AgendaActivitati
                     chartData.Add((proiect.Nume, proiect.Activitati.Count));
                 }
             }
-            chartPanel.Invalidate(); // Redraw the panel
+            chartPanel.Invalidate(); 
         }
 
-        // metoda pentru update-ul statisticilor la schimbarea unui tab
+        // metoda pentru update-ul statisticilor la schimbarea unui tab (pentru a afisa modificarile din acestea instant)
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl1.SelectedTab == tabPage4)
             {
                 UpdateChartData();
+            }
+        }
+
+
+        // DRAG & DROP Activitati
+        private void DgvActivitati_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (dgvActivitati.SelectedRows.Count > 0 && e.Button == MouseButtons.Left)
+            {
+                var activitate = (Activitate)dgvActivitati.SelectedRows[0].DataBoundItem;
+                if (activitate != null)
+                {
+                    DoDragDrop(activitate, DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void DgvProiecte_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(Activitate)))
+            {
+                e.Effect = DragDropEffects.Move;
+            }
+        }
+
+        private void DgvProiecte_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(typeof(Activitate)))
+            {
+                var activitate = (Activitate)e.Data.GetData(typeof(Activitate));
+
+                var clientPoint = dgvProiecte.PointToClient(new Point(e.X, e.Y));
+                var hitTest = dgvProiecte.HitTest(clientPoint.X, clientPoint.Y);
+
+                if (hitTest.RowIndex >= 0)
+                {
+                    var proiectTarget = (Proiect)dgvProiecte.Rows[hitTest.RowIndex].DataBoundItem;
+
+                    // gasire proiect sursa si eliminare activitate
+                    foreach (var domeniu in agenda.Domenii)
+                    {
+                        foreach (var proiect in domeniu.Proiecte)
+                        {
+                            if (proiect.Activitati.Contains(activitate))
+                            {
+                                proiect.Activitati.Remove(activitate);
+                                break;
+                            }
+                        }
+                    }
+
+                    // adaugare in proiect target
+                    proiectTarget.Activitati.Add(activitate);
+
+                    // refresh activitati
+                    if (dgvProiecte.SelectedRows.Count > 0 && dgvProiecte.SelectedRows[0].DataBoundItem == proiectTarget)
+                    {
+                        dgvActivitati.DataSource = null;
+                        dgvActivitati.DataSource = proiectTarget.Activitati;
+                    }
+                }
+            }
+        }
+
+        private void DgvProiecte_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(Activitate)))
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            e.Effect = DragDropEffects.Move;
+
+            // detectare rand target
+            var clientPoint = dgvProiecte.PointToClient(new Point(e.X, e.Y));
+            var hitTest = dgvProiecte.HitTest(clientPoint.X, clientPoint.Y);
+
+            // selectare a randului target
+            if (hitTest.RowIndex >= 0 && hitTest.RowIndex < dgvProiecte.Rows.Count)
+            {
+                dgvProiecte.ClearSelection();
+                dgvProiecte.Rows[hitTest.RowIndex].Selected = true;
+            }
+        }
+
+        // navigare prin tab-uri prin pozitionarea cursorului pe tab-ul care se doreste a fi activ
+        private void TabControl1_DragOver(object sender, DragEventArgs e)
+        {
+            Point clientPoint = tabControl1.PointToClient(new Point(e.X, e.Y));
+
+            // conversie coordonate cursor in coordonate locale tabControl 
+            for (int i = 0; i < tabControl1.TabPages.Count; i++)
+            {
+                if (tabControl1.GetTabRect(i).Contains(clientPoint))
+                {
+                    tabControl1.SelectedTab = tabControl1.TabPages[i];
+                    break;
+                }
+            }
+
+            if (e.Data.GetDataPresent(typeof(Activitate)))
+            {
+                e.Effect = DragDropEffects.Move;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
             }
         }
     }
