@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
+using System.Drawing.Printing;
+using System.Data.OleDb;
 
 namespace AgendaActivitati
 {
@@ -354,6 +356,74 @@ namespace AgendaActivitati
                 var editForm = new EditActivitateForm(activitate);
                 editForm.ShowDialog();
                 dgvActivitati.Refresh();
+            }
+        }
+
+        private void btnPrint_Click(object sender, EventArgs e)
+        {
+            PrintDocument printDoc = new PrintDocument();
+            printDoc.PrintPage += new PrintPageEventHandler(PrintPageHandler);
+            
+            PrintDialog printDialog = new PrintDialog();
+            printDialog.Document = printDoc;
+
+            if (printDialog.ShowDialog() == DialogResult.OK)
+            {
+                printDoc.Print();
+            }
+        }
+
+        private void PrintPageHandler(object sender, PrintPageEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            Font titleFont = new Font("Arial", 16, FontStyle.Bold);
+            Font contentFont = new Font("Arial", 12);
+            float yPos = 10;
+            float leftMargin = e.MarginBounds.Left;
+            float lineHeight = contentFont.GetHeight(g);
+
+            // header
+            g.DrawString("Agenda Activitati - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm"), titleFont, Brushes.Black, leftMargin, yPos);
+            yPos += lineHeight * 2;
+
+            // printare domeniu - proiect - activitate
+            foreach (var domeniu in agenda.Domenii)
+            {
+                yPos += lineHeight;
+                g.DrawString($"- Domeniu: {domeniu.Nume}", contentFont, Brushes.Black, leftMargin, yPos);
+                yPos += lineHeight;
+
+                if (!string.IsNullOrEmpty(domeniu.Descriere))
+                {
+                    g.DrawString($"  Descriere: {domeniu.Descriere}", contentFont, Brushes.Black, leftMargin, yPos);
+                    yPos += lineHeight;
+                }
+
+                foreach (var proiect in domeniu.Proiecte)
+                {
+                    yPos += lineHeight;
+                    g.DrawString($"    - Proiect: {proiect.Nume} (Inceput: {proiect.DataInceput.ToShortDateString()}, Sfarsit: {proiect.DataSfarsit.ToShortDateString()})", contentFont, Brushes.Black, leftMargin, yPos);
+                    yPos += 2 * lineHeight;
+
+                    foreach (var activitate in proiect.Activitati)
+                    {
+                        g.DrawString($"        - Activitate: {activitate.Nume}, Data: {activitate.Data.ToShortDateString()}, Finalizata: {(activitate.Finalizata ? "Da" : "Nu")}", contentFont, Brushes.Black, leftMargin, yPos);
+                        yPos += lineHeight;
+                        if (!string.IsNullOrEmpty(activitate.Descriere))
+                        {
+                            g.DrawString($"          Descriere: {activitate.Descriere}", contentFont, Brushes.Black, leftMargin, yPos);
+                            yPos += lineHeight;
+                        }
+                    }
+                }
+                yPos += lineHeight; 
+            }
+
+            // Verificare daca sunt necesare mai multe pagini
+            e.HasMorePages = (yPos > e.MarginBounds.Height);
+            if (e.HasMorePages)
+            {
+                e.HasMorePages = false; // implementare pt volume mari de date
             }
         }
     }

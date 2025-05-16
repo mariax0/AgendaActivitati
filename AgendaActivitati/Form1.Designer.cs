@@ -59,6 +59,7 @@
             domeniuToolStripMenuItem = new ToolStripMenuItem();
             proiectToolStripMenuItem = new ToolStripMenuItem();
             activitateToolStripMenuItem = new ToolStripMenuItem();
+            btnPrint = new Button();
             tabControl1.SuspendLayout();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDomenii).BeginInit();
@@ -246,18 +247,18 @@
             // 
             // btnSave
             // 
-            btnSave.Location = new Point(80, 485);
+            btnSave.Location = new Point(12, 485);
             btnSave.Name = "btnSave";
-            btnSave.Size = new Size(262, 44);
+            btnSave.Size = new Size(199, 44);
             btnSave.TabIndex = 2;
             btnSave.Text = "Salveaza date";
             btnSave.UseVisualStyleBackColor = true;
             // 
             // btnLoad
             // 
-            btnLoad.Location = new Point(348, 485);
+            btnLoad.Location = new Point(252, 485);
             btnLoad.Name = "btnLoad";
-            btnLoad.Size = new Size(239, 44);
+            btnLoad.Size = new Size(199, 44);
             btnLoad.TabIndex = 3;
             btnLoad.Text = "Incarca date";
             btnLoad.UseVisualStyleBackColor = true;
@@ -332,11 +333,22 @@
             activitateToolStripMenuItem.Text = "Activitate";
             activitateToolStripMenuItem.Click += activitateToolStripMenuItem_Click;
             // 
+            // btnPrint
+            // 
+            btnPrint.Location = new Point(489, 485);
+            btnPrint.Name = "btnPrint";
+            btnPrint.Size = new Size(199, 44);
+            btnPrint.TabIndex = 5;
+            btnPrint.Text = "Printeaza date";
+            btnPrint.UseVisualStyleBackColor = true;
+            btnPrint.Click += btnPrint_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(709, 541);
+            Controls.Add(btnPrint);
             Controls.Add(btnLoad);
             Controls.Add(tabControl1);
             Controls.Add(btnSave);
@@ -392,5 +404,6 @@
         private ToolStripMenuItem editareToolStripMenuItem1;
         private ToolStripMenuItem stergereToolStripMenuItem2;
         private ToolStripMenuItem editareToolStripMenuItem2;
+        private Button btnPrint;
     }
 }
