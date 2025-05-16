@@ -9,6 +9,7 @@ namespace AgendaActivitati
     {
         private Agenda agenda = new Agenda();
         private string caleFisier = "agenda.xml";
+        private List<(string ProjectName, int ActivityCount)> chartData;
         public Form1()
         {
             InitializeComponent();
@@ -168,6 +169,7 @@ namespace AgendaActivitati
                 dgvProiecte.DataSource = null;
                 dgvProiecte.DataSource = domeniu.Proiecte;
                 dgvActivitati.DataSource = null;
+                UpdateChartData();
             }
         }
 
@@ -419,11 +421,103 @@ namespace AgendaActivitati
                 yPos += lineHeight; 
             }
 
-            // Verificare daca sunt necesare mai multe pagini
+            // verificare daca sunt necesare mai multe pagini
             e.HasMorePages = (yPos > e.MarginBounds.Height);
             if (e.HasMorePages)
             {
                 e.HasMorePages = false; // implementare pt volume mari de date
+            }
+        }
+
+        private void chartPanel_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.Clear(Color.White); // background alb
+
+            if (chartData == null || chartData.Count == 0)
+            {
+                using (Font font = new Font("Arial", 12))
+                {
+                    g.DrawString("Selectati un domeniu pentru a vedea statistici.", font, Brushes.Black, 10, 10);
+                }
+                return;
+            }
+
+            // dimensiuni
+            int chartWidth = chartPanel.Width - 40;
+            int chartHeight = chartPanel.Height - 60;
+            int chartX = 30;
+            int chartY = 30;
+
+            // nr maxim de activitati, pentru scalare
+            int maxActivities = chartData.Max(d => d.ActivityCount);
+            if (maxActivities == 0) maxActivities = 1; // evita impartirea la 0 
+
+            // axe
+            using (Pen axisPen = new Pen(Color.Black, 2))
+            {
+                g.DrawLine(axisPen, chartX, chartY, chartX, chartY + chartHeight); // axa y
+                g.DrawLine(axisPen, chartX, chartY + chartHeight, chartX + chartWidth, chartY + chartHeight); // axa x
+            }
+
+            int barCount = chartData.Count;
+            int barWidth = Math.Max(20, chartWidth / (barCount * 2));
+            int barSpacing = barWidth;
+
+            using (Brush barBrush = new SolidBrush(Color.Blue))
+            using (Font labelFont = new Font("Arial", 10))
+            {
+                for (int i = 0; i < chartData.Count; i++)
+                {
+                    var (projectName, activityCount) = chartData[i];
+                    int barHeight = (int)((activityCount / (float)maxActivities) * (chartHeight - 20));
+                    int barX = chartX + (i * (barWidth + barSpacing));
+                    int barY = chartY + chartHeight - barHeight;
+
+                    g.FillRectangle(barBrush, barX, barY, barWidth, barHeight);
+                    g.DrawRectangle(Pens.Black, barX, barY, barWidth, barHeight);
+
+                    // nume proiect 
+                    SizeF textSize = g.MeasureString(projectName, labelFont);
+                    g.DrawString(projectName, labelFont, Brushes.Black, barX + barWidth / 2 - textSize.Width / 2, chartY + chartHeight + 5);
+
+                    // nr activitati
+                    g.DrawString(activityCount.ToString(), labelFont, Brushes.Black, barX + barWidth / 2 - 5, barY - 20);
+                }
+            }
+
+            // labels
+            using (Font axisFont = new Font("Arial", 12))
+            {
+                g.DrawString("Proiecte", axisFont, Brushes.Black, chartWidth / 2, chartY + chartHeight + 40);
+                g.TranslateTransform(chartX - 20, chartY + chartHeight / 2);
+                g.RotateTransform(-90);
+                g.DrawString("Numar Activitati", axisFont, Brushes.Black, 0, -5);
+                g.ResetTransform();
+            }
+        }
+
+        // metoda pentru afisarea statisticilor pentru domeniul selectat (folosita in dvgDomenii_SelectionChanged)
+        private void UpdateChartData()
+        {
+            chartData = new List<(string, int)>();
+            if (dgvDomenii.SelectedRows.Count > 0)
+            {
+                var domeniu = (Domeniu)dgvDomenii.SelectedRows[0].DataBoundItem;
+                foreach (var proiect in domeniu.Proiecte)
+                {
+                    chartData.Add((proiect.Nume, proiect.Activitati.Count));
+                }
+            }
+            chartPanel.Invalidate(); // Redraw the panel
+        }
+
+        // metoda pentru update-ul statisticilor la schimbarea unui tab
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControl1.SelectedTab == tabPage4)
+            {
+                UpdateChartData();
             }
         }
     }

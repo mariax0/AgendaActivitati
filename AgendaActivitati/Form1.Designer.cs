@@ -16,6 +16,7 @@
             if (disposing && (components != null))
             {
                 components.Dispose();
+                this.chartPanel?.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -48,6 +49,8 @@
             contextMenuActivitati = new ContextMenuStrip(components);
             stergereToolStripMenuItem2 = new ToolStripMenuItem();
             editareToolStripMenuItem2 = new ToolStripMenuItem();
+            tabPage4 = new TabPage();
+            chartPanel = new Panel();
             btnSave = new Button();
             btnLoad = new Button();
             menuStrip = new MenuStrip();
@@ -70,6 +73,7 @@
             tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvActivitati).BeginInit();
             contextMenuActivitati.SuspendLayout();
+            tabPage4.SuspendLayout();
             menuStrip.SuspendLayout();
             SuspendLayout();
             // 
@@ -78,11 +82,13 @@
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage3);
+            tabControl1.Controls.Add(tabPage4);
             tabControl1.Location = new Point(0, 31);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(708, 448);
             tabControl1.TabIndex = 0;
+            tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
             // tabPage2
             // 
@@ -245,6 +251,25 @@
             editareToolStripMenuItem2.Text = "Editare";
             editareToolStripMenuItem2.Click += editareToolStripMenuItem2_Click;
             // 
+            // tabPage4
+            // 
+            tabPage4.Controls.Add(chartPanel);
+            tabPage4.Location = new Point(4, 29);
+            tabPage4.Name = "tabPage4";
+            tabPage4.Padding = new Padding(3);
+            tabPage4.Size = new Size(700, 415);
+            tabPage4.TabIndex = 4;
+            tabPage4.Text = "Statistici";
+            tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // chartPanel
+            // 
+            chartPanel.Location = new Point(3, 3);
+            chartPanel.Name = "chartPanel";
+            chartPanel.Size = new Size(691, 409);
+            chartPanel.TabIndex = 0;
+            chartPanel.Paint += chartPanel_Paint;
+            // 
             // btnSave
             // 
             btnSave.Location = new Point(12, 485);
@@ -286,21 +311,21 @@
             // salveazaToolStripMenuItem
             // 
             salveazaToolStripMenuItem.Name = "salveazaToolStripMenuItem";
-            salveazaToolStripMenuItem.Size = new Size(186, 26);
+            salveazaToolStripMenuItem.Size = new Size(224, 26);
             salveazaToolStripMenuItem.Text = "Salvare date";
             salveazaToolStripMenuItem.Click += salveazaToolStripMenuItem_Click;
             // 
             // incarcaToolStripMenuItem
             // 
             incarcaToolStripMenuItem.Name = "incarcaToolStripMenuItem";
-            incarcaToolStripMenuItem.Size = new Size(186, 26);
+            incarcaToolStripMenuItem.Size = new Size(224, 26);
             incarcaToolStripMenuItem.Text = "Incarcare date";
             incarcaToolStripMenuItem.Click += incarcaToolStripMenuItem_Click;
             // 
             // eToolStripMenuItem
             // 
             eToolStripMenuItem.Name = "eToolStripMenuItem";
-            eToolStripMenuItem.Size = new Size(186, 26);
+            eToolStripMenuItem.Size = new Size(224, 26);
             eToolStripMenuItem.Text = "Inchidere";
             eToolStripMenuItem.Click += eToolStripMenuItem_Click;
             // 
@@ -366,6 +391,7 @@
             tabPage3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvActivitati).EndInit();
             contextMenuActivitati.ResumeLayout(false);
+            tabPage4.ResumeLayout(false);
             menuStrip.ResumeLayout(false);
             menuStrip.PerformLayout();
             ResumeLayout(false);
@@ -405,5 +431,7 @@
         private ToolStripMenuItem stergereToolStripMenuItem2;
         private ToolStripMenuItem editareToolStripMenuItem2;
         private Button btnPrint;
+        private TabPage tabPage4;
+        private Panel chartPanel;
     }
 }
